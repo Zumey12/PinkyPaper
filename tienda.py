@@ -47,23 +47,21 @@ encabezado = tk.Frame(ventana, bg=ROSA, height=85)
 encabezado.pack(fill="x")
 encabezado.pack_propagate(False)
 
-titulo = tk.Label(
+tk.Label(
     encabezado,
     text="Pinky Paper",
     font=("Arial", 25, "bold"),
     bg=ROSA,
     fg=TEXTO
-)
-titulo.pack(pady=(10, 0))
+).pack(pady=(10, 0))
 
-subtitulo = tk.Label(
+tk.Label(
     encabezado,
     text="Papeleria y detalles bonitos",
     font=("Arial", 10),
     bg=ROSA,
     fg=TEXTO
-)
-subtitulo.pack()
+).pack()
 
 # CUERPO PRINCIPAL
 cuerpo = tk.Frame(ventana, bg=CREMA)
@@ -92,22 +90,6 @@ def titulo_pagina(texto):
     ).pack(anchor="w", pady=(0, 15))
 
 
-def crear_boton_menu(texto, funcion):
-    tk.Button(
-        menu,
-        text=texto,
-        command=funcion,
-        font=("Arial", 11, "bold"),
-        bg=AMARILLO,
-        fg=TEXTO,
-        activebackground=ROSA,
-        relief="flat",
-        cursor="hand2",
-        width=17,
-        pady=12
-    ).pack(pady=3, padx=5)
-
-
 def crear_etiqueta(parent, texto):
     return tk.Label(
         parent,
@@ -133,10 +115,8 @@ def mostrar_inicio():
 
     tk.Label(
         contenido,
-        text=(
-            "Administra tus productos, clientes y ventas\n"
-            "desde un solo lugar."
-        ),
+        text="Administra tus productos, clientes y ventas\n"
+             "desde un solo lugar.",
         font=("Arial", 13),
         bg=CREMA,
         fg=TEXTO,
@@ -153,37 +133,26 @@ def mostrar_inicio():
     ]
 
     for texto, obtener in datos:
+        color = ROSA if texto != "Clientes registrados" else AMARILLO
         tarjeta = tk.Frame(
-            resumen,
-            bg=ROSA if texto != "Clientes registrados" else AMARILLO,
-            padx=15,
-            pady=20
+            resumen, bg=color, padx=15, pady=20
         )
         tarjeta.pack(side="left", fill="x", expand=True, padx=5)
 
         tk.Label(
-            tarjeta,
-            text=texto,
-            bg=tarjeta["bg"],
-            fg=TEXTO,
+            tarjeta, text=texto, bg=color, fg=TEXTO,
             font=("Arial", 10)
         ).pack()
 
-        numero = tk.Label(
-            tarjeta,
-            text=str(obtener()),
-            bg=tarjeta["bg"],
-            fg=TEXTO,
+        tk.Label(
+            tarjeta, text=str(obtener()), bg=color, fg=TEXTO,
             font=("Arial", 22, "bold")
-        )
-        numero.pack(pady=5)
+        ).pack(pady=5)
 
     tk.Label(
         contenido,
         text="Selecciona una opcion del menu para comenzar.",
-        bg=CREMA,
-        fg=TEXTO,
-        font=("Arial", 11)
+        bg=CREMA, fg=TEXTO, font=("Arial", 11)
     ).pack(anchor="w", pady=10)
 
 
@@ -219,24 +188,25 @@ def mostrar_productos():
     entrada_stock = tk.Entry(formulario, width=22)
     entrada_stock.grid(row=1, column=3, padx=5, pady=5)
 
-    columnas = ("codigo", "nombre", "precio", "stock")
     tabla = ttk.Treeview(
         contenido,
-        columns=columnas,
+        columns=("codigo", "nombre", "precio", "stock"),
         show="headings",
         height=13
     )
 
-    tabla.heading("codigo", text="Codigo")
-    tabla.heading("nombre", text="Producto")
-    tabla.heading("precio", text="Precio")
-    tabla.heading("stock", text="Existencias")
+    for columna, texto in [
+        ("codigo", "Codigo"),
+        ("nombre", "Producto"),
+        ("precio", "Precio"),
+        ("stock", "Existencias")
+    ]:
+        tabla.heading(columna, text=texto)
 
     tabla.column("codigo", width=100)
     tabla.column("nombre", width=250)
     tabla.column("precio", width=120)
     tabla.column("stock", width=120)
-
     tabla.pack(fill="both", expand=True, pady=15)
 
     def actualizar_tabla():
@@ -245,8 +215,7 @@ def mostrar_productos():
 
         for producto in productos:
             tabla.insert(
-                "",
-                "end",
+                "", "end",
                 values=(
                     producto["codigo"],
                     producto["nombre"],
@@ -259,16 +228,16 @@ def mostrar_productos():
         codigo = entrada_codigo.get().strip()
         nombre = entrada_nombre.get().strip()
 
+        if not codigo or not nombre:
+            messagebox.showwarning(
+                "Datos incompletos",
+                "Escribe el codigo y el nombre del producto."
+            )
+            return
+
         try:
             precio = float(entrada_precio.get())
             stock = int(entrada_stock.get())
-
-            if not codigo or not nombre:
-                messagebox.showwarning(
-                    "Datos incompletos",
-                    "Escribe el codigo y el nombre del producto."
-                )
-                return
 
             if precio <= 0 or stock < 0:
                 messagebox.showwarning(
@@ -293,10 +262,11 @@ def mostrar_productos():
 
             actualizar_tabla()
 
-            entrada_codigo.delete(0, tk.END)
-            entrada_nombre.delete(0, tk.END)
-            entrada_precio.delete(0, tk.END)
-            entrada_stock.delete(0, tk.END)
+            for entrada in (
+                entrada_codigo, entrada_nombre,
+                entrada_precio, entrada_stock
+            ):
+                entrada.delete(0, tk.END)
 
             messagebox.showinfo(
                 "Producto registrado",
@@ -313,12 +283,8 @@ def mostrar_productos():
         formulario,
         text="Registrar producto",
         command=registrar_producto,
-        bg=ROSA,
-        fg=TEXTO,
-        relief="flat",
-        font=("Arial", 10, "bold"),
-        padx=10,
-        pady=7
+        bg=ROSA, fg=TEXTO, relief="flat",
+        font=("Arial", 10, "bold"), padx=10, pady=7
     ).grid(row=2, column=0, columnspan=2, pady=10)
 
     actualizar_tabla()
@@ -357,14 +323,16 @@ def mostrar_clientes():
         height=13
     )
 
-    tabla.heading("nombre", text="Nombre")
-    tabla.heading("telefono", text="Telefono")
-    tabla.heading("correo", text="Correo electronico")
+    for columna, texto in [
+        ("nombre", "Nombre"),
+        ("telefono", "Telefono"),
+        ("correo", "Correo electronico")
+    ]:
+        tabla.heading(columna, text=texto)
 
     tabla.column("nombre", width=220)
     tabla.column("telefono", width=150)
     tabla.column("correo", width=250)
-
     tabla.pack(fill="both", expand=True, pady=15)
 
     def actualizar_tabla():
@@ -373,8 +341,7 @@ def mostrar_clientes():
 
         for cliente in clientes:
             tabla.insert(
-                "",
-                "end",
+                "", "end",
                 values=(
                     cliente["nombre"],
                     cliente["telefono"],
@@ -415,12 +382,8 @@ def mostrar_clientes():
         formulario,
         text="Registrar cliente",
         command=registrar_cliente,
-        bg=ROSA,
-        fg=TEXTO,
-        relief="flat",
-        font=("Arial", 10, "bold"),
-        padx=10,
-        pady=7
+        bg=ROSA, fg=TEXTO, relief="flat",
+        font=("Arial", 10, "bold"), padx=10, pady=7
     ).grid(row=2, column=0, columnspan=2, pady=10)
 
     actualizar_tabla()
@@ -438,9 +401,7 @@ def mostrar_ventas():
         tk.Label(
             contenido,
             text="Primero registra productos en la seccion Productos.",
-            bg=CREMA,
-            fg=TEXTO,
-            font=("Arial", 12)
+            bg=CREMA, fg=TEXTO, font=("Arial", 12)
         ).pack(anchor="w")
         return
 
@@ -451,11 +412,9 @@ def mostrar_ventas():
         row=0, column=0, sticky="w", padx=5, pady=5
     )
 
-    nombres_clientes = [c["nombre"] for c in clientes]
-
     combo_cliente = ttk.Combobox(
         formulario,
-        values=nombres_clientes,
+        values=[c["nombre"] for c in clientes],
         state="readonly",
         width=28
     )
@@ -504,27 +463,40 @@ def mostrar_ventas():
     tabla.column("cantidad", width=80)
     tabla.column("precio", width=110)
     tabla.column("importe", width=110)
-
     tabla.pack(fill="both", expand=True, pady=12)
 
     resumen = tk.Label(
         contenido,
-        text="Subtotal: $0.00    IVA: $0.00    Total: $0.00",
-        bg=AMARILLO,
-        fg=TEXTO,
-        font=("Arial", 13, "bold"),
-        pady=10
+        text="Subtotal: $0.00    Total: $0.00",
+        bg=AMARILLO, fg=TEXTO,
+        font=("Arial", 13, "bold"), pady=10
     )
     resumen.pack(fill="x", pady=5)
 
     def actualizar_resumen():
-        subtotal = sum(item["cantidad"] * item["precio"] for item in carrito)
-        iva = subtotal * 0.16
-        total = subtotal + iva
-
-        resumen.config(
-            text=f"Subtotal: ${subtotal:.2f}    IVA (16%): ${iva:.2f}    Total: ${total:.2f}"
+        subtotal = sum(
+            item["cantidad"] * item["precio"] for item in carrito
         )
+        resumen.config(
+            text=f"Subtotal: ${subtotal:.2f}    Total: ${subtotal:.2f}"
+        )
+
+    def actualizar_tabla():
+        for fila in tabla.get_children():
+            tabla.delete(fila)
+
+        for item in carrito:
+            importe = item["cantidad"] * item["precio"]
+            tabla.insert(
+                "", "end",
+                values=(
+                    item["codigo"],
+                    item["nombre"],
+                    item["cantidad"],
+                    f'${item["precio"]:.2f}',
+                    f'${importe:.2f}'
+                )
+            )
 
     def agregar_producto():
         codigo = combo_producto.get()
@@ -545,7 +517,6 @@ def mostrar_ventas():
                     "La cantidad debe ser mayor que cero."
                 )
                 return
-
         except ValueError:
             messagebox.showerror(
                 "Cantidad incorrecta",
@@ -554,8 +525,7 @@ def mostrar_ventas():
             return
 
         producto = next(
-            (p for p in productos if p["codigo"] == codigo),
-            None
+            (p for p in productos if p["codigo"] == codigo), None
         )
 
         if producto is None:
@@ -563,8 +533,7 @@ def mostrar_ventas():
             return
 
         cantidad_actual = sum(
-            item["cantidad"]
-            for item in carrito
+            item["cantidad"] for item in carrito
             if item["codigo"] == codigo
         )
 
@@ -576,8 +545,7 @@ def mostrar_ventas():
             return
 
         item_existente = next(
-            (item for item in carrito if item["codigo"] == codigo),
-            None
+            (item for item in carrito if item["codigo"] == codigo), None
         )
 
         if item_existente:
@@ -594,24 +562,6 @@ def mostrar_ventas():
         actualizar_resumen()
         entrada_cantidad.delete(0, tk.END)
         entrada_cantidad.insert(0, "1")
-
-    def actualizar_tabla():
-        for fila in tabla.get_children():
-            tabla.delete(fila)
-
-        for item in carrito:
-            importe = item["cantidad"] * item["precio"]
-            tabla.insert(
-                "",
-                "end",
-                values=(
-                    item["codigo"],
-                    item["nombre"],
-                    item["cantidad"],
-                    f'${item["precio"]:.2f}',
-                    f'${importe:.2f}'
-                )
-            )
 
     def finalizar_venta():
         if not carrito:
@@ -630,7 +580,6 @@ def mostrar_ventas():
             )
             return
 
-        # Comprobar existencias otra vez antes de cobrar
         for item in carrito:
             producto = next(
                 p for p in productos if p["codigo"] == item["codigo"]
@@ -646,10 +595,8 @@ def mostrar_ventas():
         subtotal = sum(
             item["cantidad"] * item["precio"] for item in lineas
         )
-        iva = subtotal * 0.16
-        total = subtotal + iva
+        total = subtotal
 
-        # Descontar las unidades vendidas
         for item in lineas:
             producto = next(
                 p for p in productos if p["codigo"] == item["codigo"]
@@ -662,7 +609,6 @@ def mostrar_ventas():
             "cliente": nombre_cliente,
             "productos": lineas,
             "subtotal": subtotal,
-            "iva": iva,
             "total": total
         }
 
@@ -680,24 +626,16 @@ def mostrar_ventas():
         formulario,
         text="Agregar producto",
         command=agregar_producto,
-        bg=ROSA,
-        fg=TEXTO,
-        relief="flat",
-        font=("Arial", 10, "bold"),
-        padx=10,
-        pady=7
+        bg=ROSA, fg=TEXTO, relief="flat",
+        font=("Arial", 10, "bold"), padx=10, pady=7
     ).grid(row=1, column=2, padx=10, pady=5)
 
     tk.Button(
         contenido,
         text="Finalizar venta y generar ticket",
         command=finalizar_venta,
-        bg=ROSA_OSCURO,
-        fg=BLANCO,
-        relief="flat",
-        font=("Arial", 11, "bold"),
-        padx=12,
-        pady=10
+        bg=ROSA_OSCURO, fg=BLANCO, relief="flat",
+        font=("Arial", 11, "bold"), padx=12, pady=10
     ).pack(pady=8)
 
 
@@ -740,7 +678,6 @@ def mostrar_ticket(venta):
 
     area.insert(tk.END, "-" * 40 + "\n")
     area.insert(tk.END, f"Subtotal:              ${venta['subtotal']:.2f}\n")
-    area.insert(tk.END, f"IVA (16%):             ${venta['iva']:.2f}\n")
     area.insert(tk.END, f"TOTAL:                 ${venta['total']:.2f}\n")
     area.insert(tk.END, "-" * 40 + "\n")
     area.insert(tk.END, "Gracias por comprar en Pinky Paper\n")
@@ -755,9 +692,7 @@ def mostrar_tickets():
         tk.Label(
             contenido,
             text="Todavia no se han registrado ventas.",
-            bg=CREMA,
-            fg=TEXTO,
-            font=("Arial", 12)
+            bg=CREMA, fg=TEXTO, font=("Arial", 12)
         ).pack(anchor="w")
         return
 
@@ -780,13 +715,11 @@ def mostrar_tickets():
     tabla.column("fecha", width=150)
     tabla.column("cliente", width=220)
     tabla.column("total", width=120)
-
     tabla.pack(fill="both", expand=True, pady=10)
 
     for venta in ventas:
         tabla.insert(
-            "",
-            "end",
+            "", "end",
             values=(
                 venta["folio"],
                 venta["fecha"],
@@ -815,12 +748,8 @@ def mostrar_tickets():
         contenido,
         text="Ver ticket seleccionado",
         command=abrir_ticket,
-        bg=ROSA,
-        fg=TEXTO,
-        relief="flat",
-        font=("Arial", 10, "bold"),
-        padx=12,
-        pady=8
+        bg=ROSA, fg=TEXTO, relief="flat",
+        font=("Arial", 10, "bold"), padx=12, pady=8
     ).pack(pady=8)
 
 
@@ -839,7 +768,6 @@ def iniciar_sesion():
         )
         return
 
-    # Usuarios de demostracion para la practica
     cuentas = {
         "admin": {"contrasena": "1234", "rol": "Administrador"},
         "vendedor": {"contrasena": "1234", "rol": "Vendedor"}
@@ -862,16 +790,10 @@ def iniciar_sesion():
     ventana_login.destroy()
     ventana.deiconify()
 
-    if rol == "Vendedor":
-        btn_productos.config(state="disabled")
-        btn_clientes.config(state="normal")
-        btn_ventas.config(state="normal")
-        btn_tickets.config(state="normal")
-    else:
-        btn_productos.config(state="normal")
-        btn_clientes.config(state="normal")
-        btn_ventas.config(state="normal")
-        btn_tickets.config(state="normal")
+    btn_productos.config(state="disabled" if rol == "Vendedor" else "normal")
+    btn_clientes.config(state="normal")
+    btn_ventas.config(state="normal")
+    btn_tickets.config(state="normal")
 
     mostrar_inicio()
 
@@ -881,93 +803,50 @@ def cerrar_sesion():
         "Cerrar sesion",
         "Quieres cerrar la sesion actual?"
     )
-
     if respuesta:
         ventana.destroy()
 
 
 # MENU LATERAL
 btn_inicio = tk.Button(
-    menu,
-    text="Inicio",
-    command=mostrar_inicio,
-    font=("Arial", 11, "bold"),
-    bg=AMARILLO,
-    fg=TEXTO,
-    relief="flat",
-    cursor="hand2",
-    width=17,
-    pady=12
+    menu, text="Inicio", command=mostrar_inicio,
+    font=("Arial", 11, "bold"), bg=AMARILLO, fg=TEXTO,
+    relief="flat", cursor="hand2", width=17, pady=12
 )
 btn_inicio.pack(pady=3, padx=5)
 
 btn_productos = tk.Button(
-    menu,
-    text="Productos",
-    command=mostrar_productos,
-    font=("Arial", 11, "bold"),
-    bg=AMARILLO,
-    fg=TEXTO,
-    relief="flat",
-    cursor="hand2",
-    width=17,
-    pady=12
+    menu, text="Productos", command=mostrar_productos,
+    font=("Arial", 11, "bold"), bg=AMARILLO, fg=TEXTO,
+    relief="flat", cursor="hand2", width=17, pady=12
 )
 btn_productos.pack(pady=3, padx=5)
 
 btn_clientes = tk.Button(
-    menu,
-    text="Clientes",
-    command=mostrar_clientes,
-    font=("Arial", 11, "bold"),
-    bg=AMARILLO,
-    fg=TEXTO,
-    relief="flat",
-    cursor="hand2",
-    width=17,
-    pady=12
+    menu, text="Clientes", command=mostrar_clientes,
+    font=("Arial", 11, "bold"), bg=AMARILLO, fg=TEXTO,
+    relief="flat", cursor="hand2", width=17, pady=12
 )
 btn_clientes.pack(pady=3, padx=5)
 
 btn_ventas = tk.Button(
-    menu,
-    text="Ventas",
-    command=mostrar_ventas,
-    font=("Arial", 11, "bold"),
-    bg=AMARILLO,
-    fg=TEXTO,
-    relief="flat",
-    cursor="hand2",
-    width=17,
-    pady=12
+    menu, text="Ventas", command=mostrar_ventas,
+    font=("Arial", 11, "bold"), bg=AMARILLO, fg=TEXTO,
+    relief="flat", cursor="hand2", width=17, pady=12
 )
 btn_ventas.pack(pady=3, padx=5)
 
 btn_tickets = tk.Button(
-    menu,
-    text="Tickets",
-    command=mostrar_tickets,
-    font=("Arial", 11, "bold"),
-    bg=AMARILLO,
-    fg=TEXTO,
-    relief="flat",
-    cursor="hand2",
-    width=17,
-    pady=12
+    menu, text="Tickets", command=mostrar_tickets,
+    font=("Arial", 11, "bold"), bg=AMARILLO, fg=TEXTO,
+    relief="flat", cursor="hand2", width=17, pady=12
 )
 btn_tickets.pack(pady=3, padx=5)
 
 tk.Button(
-    menu,
-    text="Cerrar sesion",
-    command=cerrar_sesion,
-    font=("Arial", 10),
-    bg=ROSA,
-    fg=TEXTO,
-    relief="flat",
-    cursor="hand2",
-    width=17,
-    pady=9
+    menu, text="Cerrar sesion", command=cerrar_sesion,
+    font=("Arial", 10), bg=ROSA, fg=TEXTO,
+    relief="flat", cursor="hand2", width=17, pady=9
 ).pack(side="bottom", pady=12, padx=5)
 
 # PANTALLA DE INICIO DE SESION
@@ -980,27 +859,18 @@ ventana_login.configure(bg=CREMA)
 ventana_login.resizable(False, False)
 
 tk.Label(
-    ventana_login,
-    text="Pinky Paper",
-    font=("Arial", 25, "bold"),
-    bg=ROSA,
-    fg=TEXTO,
-    pady=15
+    ventana_login, text="Pinky Paper",
+    font=("Arial", 25, "bold"), bg=ROSA,
+    fg=TEXTO, pady=15
 ).pack(fill="x")
 
 tk.Label(
-    ventana_login,
-    text="Inicio de sesion",
-    font=("Arial", 15, "bold"),
-    bg=CREMA,
-    fg=TEXTO
+    ventana_login, text="Inicio de sesion",
+    font=("Arial", 15, "bold"), bg=CREMA, fg=TEXTO
 ).pack(pady=(18, 8))
 
 tk.Label(
-    ventana_login,
-    text="Usuario",
-    bg=CREMA,
-    fg=TEXTO
+    ventana_login, text="Usuario", bg=CREMA, fg=TEXTO
 ).pack()
 
 entrada_usuario = tk.Entry(ventana_login, width=28)
@@ -1008,21 +878,17 @@ entrada_usuario.pack(pady=4)
 entrada_usuario.insert(0, "admin")
 
 tk.Label(
-    ventana_login,
-    text="Contrasena",
-    bg=CREMA,
-    fg=TEXTO
+    ventana_login, text="Contrasena", bg=CREMA, fg=TEXTO
 ).pack()
 
-entrada_contrasena = tk.Entry(ventana_login, width=28, show="*")
+entrada_contrasena = tk.Entry(
+    ventana_login, width=28, show="*"
+)
 entrada_contrasena.pack(pady=4)
 entrada_contrasena.insert(0, "1234")
 
 tk.Label(
-    ventana_login,
-    text="Rol",
-    bg=CREMA,
-    fg=TEXTO
+    ventana_login, text="Rol", bg=CREMA, fg=TEXTO
 ).pack()
 
 combo_rol = ttk.Combobox(
@@ -1035,15 +901,10 @@ combo_rol.pack(pady=4)
 combo_rol.set("Administrador")
 
 tk.Button(
-    ventana_login,
-    text="Entrar",
-    command=iniciar_sesion,
-    bg=ROSA,
-    fg=TEXTO,
-    font=("Arial", 11, "bold"),
-    relief="flat",
-    padx=25,
-    pady=7
+    ventana_login, text="Entrar",
+    command=iniciar_sesion, bg=ROSA, fg=TEXTO,
+    font=("Arial", 11, "bold"), relief="flat",
+    padx=25, pady=7
 ).pack(pady=12)
 
 ventana_login.protocol("WM_DELETE_WINDOW", ventana.destroy)
